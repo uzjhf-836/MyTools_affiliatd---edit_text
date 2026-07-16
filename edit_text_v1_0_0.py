@@ -4,6 +4,8 @@ import struct
 import random
 import zlib
 import urllib.parse
+import secrets
+import base64
 
 #sha512和sha384的K值，为了节省空间，这里使用全局变量
 K = [
@@ -393,6 +395,87 @@ class Text():
             try:
                 return parts[int(index)]
             except IndexError:
+                return text
+
+    class Repeat():
+        """文本重复工具。
+
+        将文本重复指定次数。
+        """
+        @staticmethod
+        def repeat(text, n):
+            """将文本重复 N 次。
+
+            Args:
+                text (str): 输入文本。
+                n (int): 重复次数。
+
+            Returns:
+                str: 重复后的文本。
+
+            Example:
+                >>> Text.Repeat.repeat('哈', 3)
+                '哈哈哈'
+            """
+            try:
+                return str(text) * int(n)
+            except (ValueError, TypeError):
+                return ''
+
+    class Slice():
+        """文本截取工具（按位置）。
+
+        按字符位置截取文本的指定范围 [x, y)。
+        """
+        @staticmethod
+        def slice(text, x, y):
+            """截取文本第 x 到 y 位（含 x，不含 y）。
+
+            Args:
+                text (str): 输入文本。
+                x (int): 起始位置（从 0 开始）。
+                y (int): 结束位置（不包含）。
+
+            Returns:
+                str: 截取的子串。
+
+            Example:
+                >>> Text.Slice.slice('hello', 1, 4)
+                'ell'
+            """
+            try:
+                return str(text)[int(x):int(y)]
+            except (ValueError, TypeError):
+                return ''
+
+    class At():
+        """文本取段工具。
+
+        以指定分隔符分割文本，取第 N 段。
+        和 Split 不同的是 At 支持负数索引（从末尾开始数）。
+        """
+        @staticmethod
+        def at(text, delimiter, index):
+            """以分隔符分割文本后取指定段。
+
+            Args:
+                text (str): 输入文本。
+                delimiter (str): 分隔符。
+                index (int): 段索引（支持负数，-1 为最后一段）。
+
+            Returns:
+                str: 指定段的文本。索引越界返回原文本。
+
+            Example:
+                >>> Text.At.at('a,b,c', ',', 1)
+                'b'
+                >>> Text.At.at('a,b,c', ',', -1)
+                'c'
+            """
+            try:
+                parts = str(text).split(str(delimiter))
+                return parts[int(index)]
+            except (IndexError, ValueError, TypeError):
                 return text
 
 class ROT():
@@ -1550,6 +1633,331 @@ class Stats():
             read_time_str = f"{read_time:.1f} 分钟"
         return f"字符: {chars}\n单词: {words}\n行数: {lines}\n预估阅读时间: {read_time_str}"
 
+class RSA():
+    """RSA 非对称加密/解密。
+
+    提供 RSA 密钥对生成、公钥加密、私钥解密功能。
+    纯 Python 实现，不依赖第三方库。
+    使用 PKCS#1 v1.5 类型 2 填充。
+    """
+
+    @staticmethod
+    def _miller_rabin(n: int, k: int = 20) -> bool:
+        """Miller-Rabin 素性测试。
+
+        Args:
+            n (int): 待测试的大整数。
+            k (int): 测试轮数，默认 20。
+
+        Returns:
+            bool: True 表示可能是素数，False 表示合数。
+        """
+        if n < 2:
+            return False
+        if n in (2, 3):
+            return True
+        if n % 2 == 0:
+            return False
+        r, s = 0, n - 1
+        while s % 2 == 0:
+            r += 1
+            s //= 2
+        for _ in range(k):
+            a = secrets.randbelow(n - 3) + 2
+            x = pow(a, s, n)
+            if x in (1, n - 1):
+                continue
+            for _ in range(r - 1):
+                x = pow(x, 2, n)
+                if x == n - 1:
+                    break
+            else:
+                return False
+        return True
+
+    @staticmethod
+    def _generate_prime(bits: int) -> int:
+        """生成指定位数的素数。
+
+        Args:
+            bits (int): 素数位数。
+
+        Returns:
+            int: 生成的素数。
+        """
+        while True:
+            n = secrets.randbits(bits)
+            n |= (1 << bits - 1) | 1
+            if RSA._miller_rabin(n):
+                return n
+
+    @staticmethod
+    def _egcd(a: int, b: int) -> tuple:
+        """扩展欧几里得算法。
+
+        Args:
+            a (int): 整数 a。
+            b (int): 整数 b。
+
+        Returns:
+            tuple: (gcd, x, y)，满足 a*x + b*y = gcd。
+        """
+        if a == 0:
+            return b, 0, 1
+        gcd, x1, y1 = RSA._egcd(b % a, a)
+        x = y1 - (b // a) * x1
+        y = x1
+        return gcd, x, y
+
+    @staticmethod
+    def _modinv(a: int, m: int) -> int:
+        """计算模逆元 (a⁻¹ mod m)。
+
+        Args:
+            a (int): 整数 a。
+            m (int): 模数 m。
+
+        Returns:
+            int: a 在模 m 下的逆元。
+        """
+        gcd, x, _ = RSA._egcd(a, m)
+        if gcd != 1:
+            raise ValueError("模逆元不存在")
+        return x % m
+
+    @staticmethod
+    def generate(bits: int = 2048) -> dict:
+        """生成 RSA 密钥对。
+
+        Args:
+            bits (int): 密钥位数。默认 2048，可选 1024/2048/4096。
+
+        Returns:
+            dict: 包含 n, e, d, p, q 的字典。
+
+        Example:
+            >>> RSA.generate()
+            {"n": 123456..., "e": 65537, "d": 789012..., "p": 3456..., "q": 5678...}
+        """
+        e = 65537
+        p_bits = bits // 2
+        q_bits = bits - p_bits
+        print(f"正在生成 {bits} 位 RSA 密钥对...")
+        print("生成素数 p...")
+        p = RSA._generate_prime(p_bits)
+        print("生成素数 q...")
+        q = RSA._generate_prime(q_bits)
+        print("计算密钥参数...")
+        n = p * q
+        phi = (p - 1) * (q - 1)
+        d = RSA._modinv(e, phi)
+        print("密钥对生成完成！")
+        return {"n": n, "e": e, "d": d, "p": p, "q": q}
+
+    @staticmethod
+    def _bytes_to_int(data: bytes) -> int:
+        return int.from_bytes(data, byteorder='big')
+
+    @staticmethod
+    def _int_to_bytes(n: int, length: int = None) -> bytes:
+        if length is None:
+            length = (n.bit_length() + 7) // 8
+        return n.to_bytes(length, byteorder='big')
+
+    @staticmethod
+    def _pkcs1_v15_pad(data: bytes, k: int) -> bytes:
+        """PKCS#1 v1.5 类型 2 填充。
+
+        Args:
+            data (bytes): 待填充的原始数据。
+            k (int): 模数的字节长度。
+
+        Returns:
+            bytes: 填充后的数据。
+
+        Raises:
+            ValueError: 数据过长时抛出。
+        """
+        max_len = k - 11
+        if len(data) > max_len:
+            raise ValueError(
+                f"消息过长！最大支持 {max_len} 字节 "
+                f"(当前 {len(data)} 字节，{k} 位密钥)"
+            )
+        ps_len = k - len(data) - 3
+        ps = bytes([secrets.randbelow(255) + 1 for _ in range(ps_len)])
+        return b'\x00\x02' + ps + b'\x00' + data
+
+    @staticmethod
+    def _pkcs1_v15_unpad(padded: bytes) -> bytes:
+        """PKCS#1 v1.5 填充移除。
+
+        Args:
+            padded (bytes): 填充后的数据。
+
+        Returns:
+            bytes: 原始数据。
+
+        Raises:
+            ValueError: 填充格式错误时抛出。
+        """
+        if len(padded) < 11 or padded[0:1] != b'\x00' or padded[1:2] != b'\x02':
+            raise ValueError("填充格式错误：无效的 PKCS#1 块类型")
+        idx = padded.find(b'\x00', 2)
+        if idx == -1 or idx < 10:
+            raise ValueError("填充格式错误：未找到数据分隔符")
+        return padded[idx + 1:]
+
+    @staticmethod
+    def save_public(key: dict, filepath_pub: str = "rsa_public.key"):
+        """保存公钥到文件。
+
+        Args:
+            key (dict): RSA 密钥字典 (需含 n, e)。
+            filepath_pub (str): 公钥文件路径，默认 rsa_public.key。
+
+        Returns:
+            str: 实际写入的文件路径。
+        """
+        pub_data = f"RSA PUBLIC KEY\nN={key['n']}\nE={key['e']}\n"
+        with open(filepath_pub, 'w', encoding='utf-8') as f:
+            f.write(pub_data)
+        print(f"公钥已保存: {filepath_pub}")
+        return filepath_pub
+
+    @staticmethod
+    def save_private(key: dict, filepath_priv: str = "rsa_private.key"):
+        """保存私钥到文件。
+
+        Args:
+            key (dict): RSA 密钥字典 (需含 n, e, d, p, q)。
+            filepath_priv (str): 私钥文件路径，默认 rsa_private.key。
+
+        Returns:
+            str: 实际写入的文件路径。
+        """
+        priv_data = (
+            f"RSA PRIVATE KEY\n"
+            f"N={key['n']}\n"
+            f"E={key['e']}\n"
+            f"D={key['d']}\n"
+            f"P={key['p']}\n"
+            f"Q={key['q']}\n"
+        )
+        with open(filepath_priv, 'w', encoding='utf-8') as f:
+            f.write(priv_data)
+        print(f"私钥已保存: {filepath_priv}")
+        return filepath_priv
+
+    @staticmethod
+    def load_public(filepath_pub: str) -> dict:
+        """从文件加载公钥。
+
+        Args:
+            filepath_pub (str): 公钥文件路径。
+
+        Returns:
+            dict: 包含 n, e 的字典。
+
+        Raises:
+            ValueError: 文件格式错误时抛出。
+        """
+        with open(filepath_pub, 'r', encoding='utf-8') as f:
+            data = f.read().strip().split('\n')
+        if not data[0].startswith("RSA PUBLIC KEY"):
+            raise ValueError("无效的公钥文件格式")
+        key = {}
+        for line in data[1:]:
+            if '=' in line:
+                k, v = line.split('=', 1)
+                key[k] = int(v)
+        return {"n": key["N"], "e": key["E"]}
+
+    @staticmethod
+    def load_private(filepath_priv: str) -> dict:
+        """从文件加载私钥。
+
+        Args:
+            filepath_priv (str): 私钥文件路径。
+
+        Returns:
+            dict: 包含 n, e, d, p, q 的字典。
+
+        Raises:
+            ValueError: 文件格式错误时抛出。
+        """
+        with open(filepath_priv, 'r', encoding='utf-8') as f:
+            data = f.read().strip().split('\n')
+        if not data[0].startswith("RSA PRIVATE KEY"):
+            raise ValueError("无效的私钥文件格式")
+        key = {}
+        for line in data[1:]:
+            if '=' in line:
+                k, v = line.split('=', 1)
+                key[k] = int(v)
+        return {"n": key["N"], "e": key["E"], "d": key["D"],
+                "p": key["P"], "q": key["Q"]}
+
+    @staticmethod
+    def encrypt_file(pubkey_path: str, plaintext: str) -> str:
+        """使用 RSA 公钥加密文本。
+
+        Args:
+            pubkey_path (str): 公钥文件路径。
+            plaintext (str): 要加密的文本。
+
+        Returns:
+            str: Base64 编码的密文字符串。
+
+        Example:
+            >>> RSA.encrypt_file("rsa_public.key", "Hello World")
+            "gH7x2a...base64...=="
+        """
+        pub = RSA.load_public(pubkey_path)
+        k = (pub['n'].bit_length() + 7) // 8
+        data = plaintext.encode('utf-8')
+        padded = RSA._pkcs1_v15_pad(data, k)
+        m = RSA._bytes_to_int(padded)
+        c = pow(m, pub['e'], pub['n'])
+        return base64.b64encode(RSA._int_to_bytes(c, k)).decode('ascii')
+
+    @staticmethod
+    def decrypt_file(privkey_path: str, cipher_b64: str) -> str:
+        """使用 RSA 私钥解密文本。
+
+        Args:
+            privkey_path (str): 私钥文件路径。
+            cipher_b64 (str): Base64 编码的密文字符串。
+
+        Returns:
+            str: 解密后的原始文本。
+
+        Example:
+            >>> RSA.decrypt_file("rsa_private.key", "gH7x2a...==")
+            "Hello World"
+        """
+        priv = RSA.load_private(privkey_path)
+        k = (priv['n'].bit_length() + 7) // 8
+        c_bytes = base64.b64decode(cipher_b64)
+        c = RSA._bytes_to_int(c_bytes)
+        m = pow(c, priv['d'], priv['n'])
+        padded = RSA._int_to_bytes(m, k)
+        data = RSA._pkcs1_v15_unpad(padded)
+        return data.decode('utf-8')
+
+    @staticmethod
+    def extract_public(privkey_path: str, output_path: str = "rsa_public.key"):
+        """从私钥提取公钥。
+
+        Args:
+            privkey_path (str): 私钥文件路径。
+            output_path (str): 输出的公钥文件路径，默认 rsa_public.key。
+        """
+        priv = RSA.load_private(privkey_path)
+        pub = {"n": priv["n"], "e": priv["e"]}
+        RSA.save_public(pub, output_path)
+
+
 def rainbow():
     """输出 256 色彩虹文字。
 
@@ -1575,7 +1983,7 @@ if __name__ == "__main__":
         #==帮助==
         if sys.argv[1] == "--help":
             print(r"""
- edit_text Beta — 文本编辑工具
+ edit_text v1.0.0 — 文本编辑工具
 
  用法:
      --version                   显示版本号
@@ -1630,6 +2038,12 @@ if __name__ == "__main__":
  其他:
      --stats <文本>                        文本统计 & 阅读时间估算
      --rainbow                             彩虹输出 (～￣▽￣)～
+	 RSA 非对称加密:
+	     --rsa generate [位数]                        生成 RSA 密钥对 (默认 2048 位)
+	     --rsa encrypt <公钥文件> <文本>               使用公钥加密
+	     --rsa decrypt <私钥文件> <密文>               使用私钥解密
+	     --rsa pubkey <私钥文件> [输出文件]            从私钥提取公钥
+
 
  示例:
      edit_text --rot ascii 13 Hello
@@ -1793,6 +2207,21 @@ if __name__ == "__main__":
                     print(Text.Split.split(sys.argv[5], sys.argv[3], sys.argv[4]))
                 else:
                     raise UnknownArgs
+            elif sys.argv[2] == "repeat":
+                if sys.argv[3] and sys.argv[4]:
+                    print(Text.Repeat.repeat(sys.argv[4], sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "slice":
+                if sys.argv[3] and sys.argv[4] and sys.argv[5]:
+                    print(Text.Slice.slice(sys.argv[5], sys.argv[3], sys.argv[4]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "at":
+                if sys.argv[3] and sys.argv[4] and sys.argv[5]:
+                    print(Text.At.at(sys.argv[5], sys.argv[3], sys.argv[4]))
+                else:
+                    raise UnknownArgs
             else:
                 raise UnknownArgs
 
@@ -1933,6 +2362,42 @@ if __name__ == "__main__":
         #==Rainbow==
         elif sys.argv[1] == "--rainbow":
             rainbow()
+
+        #==RSA加密==
+        elif sys.argv[1] == "--rsa":
+            if sys.argv[2] == "generate":
+                bits = 2048
+                try:
+                    if sys.argv[3]:
+                        bits = int(sys.argv[3])
+                except IndexError:
+                    pass
+                key = RSA.generate(bits)
+                RSA.save_public(key, f"rsa_public_{bits}.key")
+                RSA.save_private(key, f"rsa_private_{bits}.key")
+            elif sys.argv[2] == "encrypt":
+                if sys.argv[3] and sys.argv[4]:
+                    print(RSA.encrypt_file(sys.argv[3], sys.argv[4]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "decrypt":
+                if sys.argv[3] and sys.argv[4]:
+                    print(RSA.decrypt_file(sys.argv[3], sys.argv[4]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "pubkey":
+                if sys.argv[3]:
+                    out = "rsa_public.key"
+                    try:
+                        if sys.argv[4]:
+                            out = sys.argv[4]
+                    except IndexError:
+                        pass
+                    RSA.extract_public(sys.argv[3], out)
+                else:
+                    raise UnknownArgs
+            else:
+                raise UnknownArgs
 
         else:
             raise UnknownArgs
