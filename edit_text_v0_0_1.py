@@ -235,21 +235,75 @@ class Text():
 
 
     class Case():
-        """大小写转换。"""
+        """大小写转换。
+
+        提供字符串的全大写、全小写和标题格式转换。
+        """
         @staticmethod
         def upper(text):
+            """将文本转换为全大写。
+
+            Args:
+                text (str): 输入文本。
+
+            Returns:
+                str: 全大写后的文本。
+
+            Example:
+                >>> Text.Case.upper('hello')
+                'HELLO'
+            """
             return str(text).upper()
         @staticmethod
         def lower(text):
+            """将文本转换为全小写。
+
+            Args:
+                text (str): 输入文本。
+
+            Returns:
+                str: 全小写后的文本。
+
+            Example:
+                >>> Text.Case.lower('HELLO')
+                'hello'
+            """
             return str(text).lower()
         @staticmethod
         def title(text):
+            """将文本转换为标题格式（每个单词首字母大写）。
+
+            Args:
+                text (str): 输入文本。
+
+            Returns:
+                str: 标题格式后的文本。
+
+            Example:
+                >>> Text.Case.title('hello world')
+                'Hello World'
+            """
             return str(text).title()
 
     class Count():
-        """文本统计 (字符/单词/行数)。"""
+        """文本统计工具。
+
+        统计文本的字符数、单词数和行数。
+        """
         @staticmethod
         def count(text):
+            """统计文本的字符数、单词数和行数。
+
+            Args:
+                text (str): 输入文本。
+
+            Returns:
+                str: 包含字符数、单词数和行数的格式化结果。
+
+            Example:
+                >>> Text.Count.count('hello\nworld')
+                '字符: 11\n单词: 2\n行数: 2'
+            """
             text = str(text)
             chars = len(text)
             words = len(text.split())
@@ -257,9 +311,27 @@ class Text():
             return f"字符: {chars}\n单词: {words}\n行数: {lines}"
 
     class Sort():
-        """文本行排序 / 去重。"""
+        """文本行排序工具。
+
+        支持普通排序和排序后去重。
+        """
         @staticmethod
         def sort(text, uniq=False):
+            """对文本行进行排序（可选去重）。
+
+            Args:
+                text (str): 输入文本，按换行符分隔。
+                uniq (bool): 是否去重，默认为 False。
+
+            Returns:
+                str: 排序后的文本。
+
+            Example:
+                >>> Text.Sort.sort('b\na\nc\na')
+                'a\nb\nc\na'
+                >>> Text.Sort.sort('b\na\nc\na', True)
+                'a\nb\nc'
+            """
             lines = str(text).split('\n')
             lines.sort()
             if uniq:
@@ -273,9 +345,26 @@ class Text():
             return '\n'.join(lines)
 
     class Split():
-        """文本按分隔符截取指定段。"""
+        """文本分隔工具。
+
+        将文本按指定分隔符拆分并截取指定段。
+        """
         @staticmethod
         def split(text, delimiter, index):
+            """将文本按分隔符拆分后截取指定段。
+
+            Args:
+                text (str): 输入文本。
+                delimiter (str): 分隔符。
+                index (int): 要截取的段索引（从 0 开始）。
+
+            Returns:
+                str: 指定段的文本。索引越界时返回原文本。
+
+            Example:
+                >>> Text.Split.split('a,b,c', ',', 1)
+                'b'
+            """
             parts = str(text).split(str(delimiter))
             try:
                 return parts[int(index)]
@@ -1096,30 +1185,111 @@ class Hash():
 
 
 class URL():
-    """URL 编解码。"""
+    """URL 编解码工具类。
+
+    提供标准的 URL 百分号编码（Percent-encoding）和解码功能。
+    """
     @staticmethod
     def encode(text):
+        """将文本进行 URL 编码。
+
+        Args:
+            text (str): 要编码的文本。
+
+        Returns:
+            str: URL 编码后的字符串。
+
+        Example:
+            >>> URL.encode('你好')
+            '%E4%BD%A0%E5%A5%BD'
+        """
         return urllib.parse.quote(str(text), safe='')
     @staticmethod
     def decode(text):
+        """将 URL 编码的字符串解码为原始文本。
+
+        Args:
+            text (str): URL 编码字符串。
+
+        Returns:
+            str: 解码后的原始文本。
+
+        Example:
+            >>> URL.decode('%E4%BD%A0%E5%A5%BD')
+            '你好'
+        """
         return urllib.parse.unquote(str(text))
 
 class Hex():
-    """十六进制 ↔ 文本。"""
+    """十六进制编解码工具类。
+
+    提供 UTF-8 文本与十六进制字符串之间的相互转换。
+    """
     @staticmethod
     def encode(text):
+        """将文本编码为十六进制字符串。
+
+        Args:
+            text (str): 要编码的文本。
+
+        Returns:
+            str: 十六进制编码字符串。
+
+        Example:
+            >>> Hex.encode('Hello')
+            '48656c6c6f'
+        """
         return str(text).encode('utf-8').hex()
     @staticmethod
     def decode(text):
+        """将十六进制字符串解码为原始文本。
+
+        Args:
+            text (str): 十六进制编码字符串。
+
+        Returns:
+            str: 解码后的原始文本。
+
+        Example:
+            >>> Hex.decode('48656c6c6f')
+            'Hello'
+        """
         return bytes.fromhex(str(text)).decode('utf-8')
 
 class Bin():
-    """二进制 ↔ 文本。"""
+    """二进制编解码工具类。
+
+    提供 UTF-8 文本与二进制字符串（如 ``01001000``）之间的相互转换。
+    """
     @staticmethod
     def encode(text):
+        """将文本编码为二进制字符串（每字节 8 位，空格分隔）。
+
+        Args:
+            text (str): 要编码的文本。
+
+        Returns:
+            str: 二进制编码字符串。
+
+        Example:
+            >>> Bin.encode('Hi')
+            '01001000 01101001'
+        """
         return ' '.join(format(b, '08b') for b in str(text).encode('utf-8'))
     @staticmethod
     def decode(text):
+        """将二进制字符串解码为原始文本。
+
+        Args:
+            text (str): 二进制编码字符串（每字节 8 位，空格分隔）。
+
+        Returns:
+            str: 解码后的原始文本。
+
+        Example:
+            >>> Bin.decode('01001000 01101001')
+            'Hi'
+        """
         bins = str(text).split()
         return bytes(int(b, 2) for b in bins).decode('utf-8')
 
@@ -1145,6 +1315,18 @@ class Morse():
 
     @staticmethod
     def encode(text):
+        """将文本编码为摩斯电码。
+
+        Args:
+            text (str): 要编码的文本（自动转为大写）。
+
+        Returns:
+            str: 摩斯电码字符串，各符号间以空格分隔。
+
+        Example:
+            >>> Morse.encode('SOS')
+            '... --- ...'
+        """
         text = str(text).upper()
         result = []
         for char in text:
@@ -1156,6 +1338,18 @@ class Morse():
 
     @staticmethod
     def decode(text):
+        """将摩斯电码解码为原始文本。
+
+        Args:
+            text (str): 摩斯电码字符串，各符号间以空格分隔。
+
+        Returns:
+            str: 解码后的文本。
+
+        Example:
+            >>> Morse.decode('... --- ...')
+            'SOS'
+        """
         result = []
         for code in str(text).split(' '):
             if code in Morse._MORSE_REV:
@@ -1170,6 +1364,21 @@ class Atbash():
     """Atbash 密码 (字母表反转)。"""
     @staticmethod
     def cipher(text):
+        """对文本应用 Atbash 密码（字母表反转）。
+
+        大写字母映射到对应的大写反转字母，小写映射到小写反转字母，
+        非字母字符保持不变。
+
+        Args:
+            text (str): 输入文本。
+
+        Returns:
+            str: Atbash 加密/解密后的文本（加解密使用同一函数）。
+
+        Example:
+            >>> Atbash.cipher('Hello')
+            'Svool'
+        """
         result = []
         for char in str(text):
             if 'A' <= char <= 'Z':
@@ -1181,35 +1390,109 @@ class Atbash():
         return ''.join(result)
 
 class XOR():
-    """XOR 加解密 (输出/输入十六进制)。"""
+    """XOR 加解密工具。
+
+    使用 XOR 算法对文本加解密，输出为十六进制字符串。
+    加解密使用同一函数，对密文再次执行 XOR 即可还原。
+    """
     @staticmethod
     def cipher(text, key):
+        """对文本进行 XOR 加解密。
+
+        Args:
+            text (str): 明文或密文（十六进制字符串）。
+            key (str): 密钥。
+
+        Returns:
+            str: 加密/解密后的十六进制字符串。对结果再次用相同密钥执行会还原。
+
+        Example:
+            >>> XOR.cipher('Hello', 'key')
+            '230015070a'
+            >>> XOR.cipher('230015070a', 'key')  # 注意: 输入为十六进制字符串
+        """
         text_bytes = str(text).encode('utf-8')
         key_bytes = str(key).encode('utf-8')
         result = bytes(text_bytes[i] ^ key_bytes[i % len(key_bytes)] for i in range(len(text_bytes)))
         return result.hex()
 
 class CRC32():
-    """CRC32 校验。"""
+    """CRC32 校验工具类。
+
+    提供 32 位循环冗余校验值计算。
+    """
     @staticmethod
     def crc32(text):
+        """计算文本的 CRC32 校验值。
+
+        Args:
+            text (str): 输入文本。
+
+        Returns:
+            str: 8 位十六进制 CRC32 校验值。
+
+        Example:
+            >>> CRC32.crc32('Hello')
+            'f7d18982'
+        """
         return format(zlib.crc32(str(text).encode('utf-8')) & 0xFFFFFFFF, '08x')
 
 class FileTools():
-    """文件读写 / 哈希 / 编码。"""
+    """文件操作工具类。
+
+    提供文本文件的读取、写入、哈希计算和编码转换功能。
+    """
     @staticmethod
     def read(path):
+        """读取文本文件内容。
+
+        Args:
+            path (str): 文件路径。
+
+        Returns:
+            str: 文件内容（UTF-8 编码）。
+
+        Example:
+            >>> FileTools.read('test.txt')
+            'Hello World'
+        """
         with open(path, 'r', encoding='utf-8') as f:
             return f.read()
 
     @staticmethod
     def write(path, content):
+        """将内容写入文本文件。
+
+        Args:
+            path (str): 文件路径。
+            content (str): 要写入的内容。
+
+        Returns:
+            str: 写入成功的提示信息。
+
+        Example:
+            >>> FileTools.write('test.txt', 'Hello')
+            '[OK] 已写入 test.txt'
+        """
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
         return f"[OK] 已写入 {path}"
 
     @staticmethod
     def hash(path, algo):
+        """计算文本文件的哈希值。
+
+        Args:
+            path (str): 文件路径。
+            algo (str): 哈希算法 (md5/sha1/sha256/sha384/sha512/ripemd160/crc32)。
+
+        Returns:
+            str: 哈希值字符串。不支持算法时返回错误提示。
+
+        Example:
+            >>> FileTools.hash('test.txt', 'sha256')
+            'e3b0c44298fc1c149afbf4c8996fb924...'
+        """
         with open(path, 'rb') as f:
             data = f.read()
         text = data.decode('utf-8')
@@ -1233,6 +1516,19 @@ class FileTools():
 
     @staticmethod
     def encode(path, enc):
+        """将文本文件编码为指定格式。
+
+        Args:
+            path (str): 文件路径。
+            enc (str): 编码格式 (base64/hex/bin)。
+
+        Returns:
+            str: 编码后的字符串。不支持编码时返回错误提示。
+
+        Example:
+            >>> FileTools.encode('test.txt', 'base64')
+            'SGVsbG8='
+        """
         with open(path, 'r', encoding='utf-8') as f:
             data = f.read()
         enc = enc.lower()
@@ -1246,14 +1542,30 @@ class FileTools():
             return f"[错误] 不支持编码: {enc}"
 
 class Stats():
-    """文本统计 & 阅读时间估算。"""
+    """文本统计 & 阅读时间估算工具类。
+
+    统计文本的字符数、单词数、行数，并根据平均阅读速度（300 词/分钟）
+    估算阅读所需时间。
+    """
     @staticmethod
     def stats(text):
+        """统计文本信息并估算阅读时间。
+
+        Args:
+            text (str): 输入文本。
+
+        Returns:
+            str: 包含字符数、单词数、行数和预估阅读时间的格式化结果。
+
+        Example:
+            >>> Stats.stats('Hello world')
+            '字符: 11\n单词: 2\n行数: 1\n预估阅读时间: 1 秒'
+        """
         text = str(text)
         chars = len(text)
         words = len(text.split())
         lines = text.count('\n') + 1
-        read_time = words / 300  # 平均阅读速度 300词/分钟
+        read_time = words / 300
         if read_time < 1:
             read_time_str = f"{read_time * 60:.0f} 秒"
         else:
@@ -1261,6 +1573,21 @@ class Stats():
         return f"字符: {chars}\n单词: {words}\n行数: {lines}\n预估阅读时间: {read_time_str}"
 
 def rainbow():
+    """输出 256 色彩虹文字。
+
+    将 "我是劲爆彩虹" 重复至 256 个字符，每个字符以不同 ANSI
+    颜色输出，形成彩虹渐变效果。
+
+    Args:
+        None
+
+    Returns:
+        None: 直接输出到控制台。
+
+    Example:
+        >>> rainbow()
+        # 在支持 ANSI 颜色的终端中显示彩色文字
+    """
     text=list("我是劲爆彩虹"*99)
     for i in range(256):
         print(f"\033[38;5;{i}m {text[i]}",end='')
