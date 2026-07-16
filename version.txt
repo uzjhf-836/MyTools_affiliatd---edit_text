@@ -1,1 +1,1 @@
-edit_text v0.0.1 beta 75683c9
+edit_text v1.0.0 30604c9
