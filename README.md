@@ -232,4 +232,4 @@ README.md              # 本文件
 
 ---
 
-*由 uzjhf-836 和 Claude 共同开发 *
+*由 uzjhf-836 和 Claude 共同开发*
