@@ -1,9 +1,9 @@
 # 🛠️ edit_text
 
-[![Python](https://img.shields.io/badge/Python-3.15.0b1-yellow)](https://python.org)
-[![Version](https://img.shields.io/badge/版本-v1.0.0-blue)](https://github.com/uzjhf-836/MyTools_affiliatd---edit_text)
+[![Python](https://img.shields.io/badge/Python-3.6+-yellow)](https://python.org)
+[![Version](https://img.shields.io/badge/Version-v1.0.0-blue)](https://github.com/uzjhf-836/MyTools_affiliatd---edit_text)
 [![License](https://img.shields.io/badge/License-Apache_2.0-green)](https://apache.org/licenses/LICENSE-2.0)
-[![Platform](https://img.shields.io/badge/平台-Windows-white)](https://microsoft.com/windows)
+[![Platform](https://img.shields.io/badge/Platform-Windows/macOS/Linux-white)](https://microsoft.com/windows)
 [![Commit](https://img.shields.io/github/last-commit/uzjhf-836/MyTools_affiliatd---edit_text)](https://github.com/uzjhf-836/MyTools_affiliatd---edit_text/commits/main)
 [![Co-Author](https://img.shields.io/badge/Co--Author-Claude-8A2BE2)](https://claude.ai)
 
