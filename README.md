@@ -1,15 +1,18 @@
-# 🛠️ edit_text
+# edit_text
 
-[![Python](https://img.shields.io/badge/Python-3.6+-yellow)](https://python.org)
+[![Python](https://img.shields.io/badge/Python-3.6+-yellow?logo=python)](https://python.org)
 [![Version](https://img.shields.io/badge/Version-v1.0.0-blue)](https://github.com/uzjhf-836/MyTools_affiliatd---edit_text)
 [![License](https://img.shields.io/badge/License-Apache_2.0-green)](https://apache.org/licenses/LICENSE-2.0)
-[![Platform](https://img.shields.io/badge/Platform-Windows/macOS/Linux-white)](https://microsoft.com/windows)
-[![Commit](https://img.shields.io/github/last-commit/uzjhf-836/MyTools_affiliatd---edit_text)](https://github.com/uzjhf-836/MyTools_affiliatd---edit_text/commits/main)
-[![Co-Author](https://img.shields.io/badge/Co--Author-Claude-8A2BE2)](https://claude.ai)
+[![Platform](https://img.shields.io/badge/Platform-Windows/macOS/Linux-white)](https://www.bing.com/search?q=all+platforms)
+[![Commit](https://img.shields.io/github/last-commit/uzjhf-836/MyTools_affiliatd---edit_text?logo=github)](https://github.com/uzjhf-836/MyTools_affiliatd---edit_text/commits/main)
+[![Co-Author](https://img.shields.io/badge/Co--Author-Claude-8A2BE2?logo=claude)](https://claude.ai)
 
-> MyTools「Text」类的加强版 —— 纯 Python 命令行文本工具集，零依赖！
+> MyTools「Text」类的加强版 —— 纯 Python 命令行文本工具集，~~零依赖~~<Python是个依赖qwq！
 
 ---
+
+# 警告
+由于本程序使用了f-string，使用本程序Python版本最低为3.6
 
 ## 📋 目录
 
@@ -35,7 +38,7 @@
 
 ### 特点
 
-- **零依赖** —— 纯 Python 标准库实现，无需 pip install
+~~零依赖~~ —— 纯 Python 标准~~库~~实现，**无需 pip install**
 - **覆盖全面** —— 文本、哈希、编解码、密码学、文件处理
 - **简单易用** —— 命令行参数直截了当，--help 即学即用
 - **纯 Python 实现** —— RSA、SHA 系列哈希等算法均从零手写
@@ -121,12 +124,13 @@ cd MyTools_affiliatd---edit_text
 python edit_text_v1_0_0.py --help
 ```
 
-> 要求 Python 3.6+（使用了 f-string 特性）
-
+> 要求 Python 3.6+
 ---
 
 ## 🔧 使用指南
 
+## 调用方法:
+### 1.命令行参数
 ### 文本工具
 
 ```bash
@@ -190,6 +194,11 @@ python edit_text_v1_0_0.py --file hash sha256 input.txt
 
 ---
 
+### 2.导入模块
+```python
+import edit_text_v1_0_0
+使用任何函数！
+```
 ## 💡 示例
 
 ```bash
@@ -223,4 +232,4 @@ README.md              # 本文件
 
 ---
 
-*由 uzjhf-836 和 Claude 共同开发 ❤️*
+*由 uzjhf-836 和 Claude 共同开发 *
