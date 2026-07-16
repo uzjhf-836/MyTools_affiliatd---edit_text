@@ -1,2 +1,1 @@
-edit_text v0.0.1
-beta 02bca98
+edit_text v0.0.1 beta fc129bc
