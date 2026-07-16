@@ -2,6 +2,8 @@ import sys
 import math
 import struct
 import random
+import zlib
+import urllib.parse
 
 class UnknownArgs(Exception):
     """自定义异常：未知的命令行参数。"""
@@ -226,6 +228,55 @@ class Text():
                         i += len(string)
                     else:
                         i += 1
+                return text
+
+
+    class Case():
+        """大小写转换。"""
+        @staticmethod
+        def upper(text):
+            return str(text).upper()
+        @staticmethod
+        def lower(text):
+            return str(text).lower()
+        @staticmethod
+        def title(text):
+            return str(text).title()
+
+    class Count():
+        """文本统计 (字符/单词/行数)。"""
+        @staticmethod
+        def count(text):
+            text = str(text)
+            chars = len(text)
+            words = len(text.split())
+            lines = text.count('\n') + 1
+            return f"字符: {chars}\n单词: {words}\n行数: {lines}"
+
+    class Sort():
+        """文本行排序 / 去重。"""
+        @staticmethod
+        def sort(text, uniq=False):
+            lines = str(text).split('\n')
+            lines.sort()
+            if uniq:
+                result = []
+                seen = set()
+                for line in lines:
+                    if line not in seen:
+                        result.append(line)
+                        seen.add(line)
+                return '\n'.join(result)
+            return '\n'.join(lines)
+
+    class Split():
+        """文本按分隔符截取指定段。"""
+        @staticmethod
+        def split(text, delimiter, index):
+            parts = str(text).split(str(delimiter))
+            try:
+                return parts[int(index)]
+            except IndexError:
                 return text
 
 class ROT():
@@ -1041,30 +1092,216 @@ class Hash():
         return struct.pack('>8Q', h0, h1, h2, h3, h4, h5, h6, h7).hex()[:96]
 
 
+class URL():
+    """URL 编解码。"""
+    @staticmethod
+    def encode(text):
+        return urllib.parse.quote(str(text), safe='')
+    @staticmethod
+    def decode(text):
+        return urllib.parse.unquote(str(text))
+
+class Hex():
+    """十六进制 ↔ 文本。"""
+    @staticmethod
+    def encode(text):
+        return str(text).encode('utf-8').hex()
+    @staticmethod
+    def decode(text):
+        return bytes.fromhex(str(text)).decode('utf-8')
+
+class Bin():
+    """二进制 ↔ 文本。"""
+    @staticmethod
+    def encode(text):
+        return ' '.join(format(b, '08b') for b in str(text).encode('utf-8'))
+    @staticmethod
+    def decode(text):
+        bins = str(text).split()
+        return bytes(int(b, 2) for b in bins).decode('utf-8')
+
+class Morse():
+    """摩斯电码编解码。"""
+    _MORSE_CODE = {
+        'A': '.-', 'B': '-...', 'C': '-.-.', 'D': '-..', 'E': '.',
+        'F': '..-.', 'G': '--.', 'H': '....', 'I': '..', 'J': '.---',
+        'K': '-.-', 'L': '.-..', 'M': '--', 'N': '-.', 'O': '---',
+        'P': '.--.', 'Q': '--.-', 'R': '.-.', 'S': '...', 'T': '-',
+        'U': '..-', 'V': '...-', 'W': '.--', 'X': '-..-', 'Y': '-.--',
+        'Z': '--..',
+        '0': '-----', '1': '.----', '2': '..---', '3': '...--',
+        '4': '....-', '5': '.....', '6': '-....', '7': '--...',
+        '8': '---..', '9': '----.',
+        '.': '.-.-.-', ',': '--..--', '?': '..--..', "'": '.----.',
+        '!': '-.-.--', '/': '-..-.', '(': '-.--.', ')': '-.--.-',
+        '&': '.-...', ':': '---...', ';': '-.-.-.', '=': '-...-',
+        '+': '.-.-.', '-': '-....-', '_': '..--.-', '"': '.-..-.',
+        '@': '.--.-.', ' ': '/'
+    }
+    _MORSE_REV = {v: k for k, v in _MORSE_CODE.items()}
+
+    @staticmethod
+    def encode(text):
+        text = str(text).upper()
+        result = []
+        for char in text:
+            if char in Morse._MORSE_CODE:
+                result.append(Morse._MORSE_CODE[char])
+            else:
+                result.append(char)
+        return ' '.join(result)
+
+    @staticmethod
+    def decode(text):
+        result = []
+        for code in str(text).split(' '):
+            if code in Morse._MORSE_REV:
+                result.append(Morse._MORSE_REV[code])
+            elif code == '':
+                continue
+            else:
+                result.append(code)
+        return ''.join(result)
+
+class Atbash():
+    """Atbash 密码 (字母表反转)。"""
+    @staticmethod
+    def cipher(text):
+        result = []
+        for char in str(text):
+            if 'A' <= char <= 'Z':
+                result.append(chr(ord('Z') - (ord(char) - ord('A'))))
+            elif 'a' <= char <= 'z':
+                result.append(chr(ord('z') - (ord(char) - ord('a'))))
+            else:
+                result.append(char)
+        return ''.join(result)
+
+class XOR():
+    """XOR 加解密 (输出/输入十六进制)。"""
+    @staticmethod
+    def cipher(text, key):
+        text_bytes = str(text).encode('utf-8')
+        key_bytes = str(key).encode('utf-8')
+        result = bytes(text_bytes[i] ^ key_bytes[i % len(key_bytes)] for i in range(len(text_bytes)))
+        return result.hex()
+
+class CRC32():
+    """CRC32 校验。"""
+    @staticmethod
+    def crc32(text):
+        return format(zlib.crc32(str(text).encode('utf-8')) & 0xFFFFFFFF, '08x')
+
+class FileTools():
+    """文件读写 / 哈希 / 编码。"""
+    @staticmethod
+    def read(path):
+        with open(path, 'r', encoding='utf-8') as f:
+            return f.read()
+
+    @staticmethod
+    def write(path, content):
+        with open(path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        return f"[OK] 已写入 {path}"
+
+    @staticmethod
+    def hash(path, algo):
+        with open(path, 'rb') as f:
+            data = f.read()
+        text = data.decode('utf-8')
+        algo = algo.lower()
+        if algo == 'md5':
+            return Hash.MD5(text)
+        elif algo == 'sha1':
+            return Hash.sha1(text)
+        elif algo == 'sha256':
+            return Hash.sha256(text)
+        elif algo == 'sha384':
+            return Hash.sha384(text)
+        elif algo == 'sha512':
+            return Hash.sha512(text)
+        elif algo == 'ripemd160':
+            return Hash.RIPEMD160(text)
+        elif algo == 'crc32':
+            return CRC32.crc32(text)
+        else:
+            return f"[错误] 不支持哈希算法: {algo}"
+
+    @staticmethod
+    def encode(path, enc):
+        with open(path, 'r', encoding='utf-8') as f:
+            data = f.read()
+        enc = enc.lower()
+        if enc == 'base64':
+            return Base64.encode(data)
+        elif enc == 'hex':
+            return Hex.encode(data)
+        elif enc == 'bin':
+            return Bin.encode(data)
+        else:
+            return f"[错误] 不支持编码: {enc}"
+
+class Stats():
+    """文本统计 & 阅读时间估算。"""
+    @staticmethod
+    def stats(text):
+        text = str(text)
+        chars = len(text)
+        words = len(text.split())
+        lines = text.count('\n') + 1
+        read_time = words / 300  # 平均阅读速度 300词/分钟
+        if read_time < 1:
+            read_time_str = f"{read_time * 60:.0f} 秒"
+        else:
+            read_time_str = f"{read_time:.1f} 分钟"
+        return f"字符: {chars}\n单词: {words}\n行数: {lines}\n预估阅读时间: {read_time_str}"
+
+
 if __name__ == "__main__":
     try:
         #==帮助==
         if sys.argv[1] == "--help":
             print(r"""
- edit_text v0.0.1beta86eee77 — 文本编辑工具
+ edit_text Beta 877f2e9 — 文本编辑工具
 
  用法:
      --version                   显示版本号
      --help                      显示此帮助
 
  加密 / 编码:
-     --rot ascii <偏移> <文本>   凯撒密码 (ASCII字母)
-     --rot unicode <偏移> <文本>  Unicode码点偏移
-     --base64 encode <文本>       Base64编码
-     --base64 decode <文本>       Base64解码
+     --rot ascii <偏移> <文本>     凯撒密码 (ASCII字母)
+     --rot unicode <偏移> <文本>    Unicode码点偏移
+     --base64 encode <文本>         Base64编码
+     --base64 decode <文本>         Base64解码
+     --url encode <文本>            URL编码
+     --url decode <文本>            URL解码
+     --hex encode <文本>            十六进制编码
+     --hex decode <文本>            十六进制解码
+     --bin encode <文本>            二进制编码
+     --bin decode <文本>            二进制解码
+     --morse encode <文本>          摩斯电码编码
+     --morse decode <文本>          摩斯电码解码
+     --atbash <文本>                Atbash字母反转密码
+     --xor <密钥> <文本>            XOR加解密
 
  哈希:
-     --hash md5 <文本> [warning]      MD5
+     --hash md5 <文本> [warning]         MD5
+     --hash sha1 <文本> [warning]        SHA-1
+     --hash sha256 <文本>                SHA-256
+     --hash sha384 <文本>                SHA-384
+     --hash sha512 <文本>                SHA-512
+     --hash ripemd160 <文本> [warning]   RIPEMD-160
+     --hash crc32 <文本>                 CRC32
 
- 文本替换:
-     --text replace all <文本> <旧> <新>              全部替换
-     --text replace place <文本> <旧> <新> <位置>     指定索引替换
+ 文本操作:
+     --text replace all <文本> <旧> <新>               全部替换
+     --text replace place <文本> <旧> <新> <位置>      指定索引替换
      --text replace precise_place <文本> <旧> <新> <N>  第N次出现替换
+     --text case <upper|lower|title> <文本>            大小写转换
+     --text count <文本>                               字符/单词/行数统计
+     --text sort [uniq] <文本>                         文本行排序
+     --text split <分隔符> <N> <文本>                  文本截取指定段
 
  工具:
      --tools reverse <文本>                    反转字符串
@@ -1072,17 +1309,38 @@ if __name__ == "__main__":
      --tools randhex <长度> [nozero]           随机十六进制数
      --tools randpwd                           生成随机密码
 
+ 文件操作:
+     --file read <路径>                   读取文本文件
+     --file write <路径> <内容>           写入文本文件
+     --file hash <路径> <算法>            计算文件哈希
+     --file encode <路径> <编码>          文件编码(base64|hex|bin)
+
+ 其他:
+     --stats <文本>                        文本统计 & 阅读时间估算
+
  示例:
      edit_text --rot ascii 13 Hello
      edit_text --rot unicode 5 你好
      edit_text --base64 encode 哈基米
+     edit_text --url encode 你好
+     edit_text --hex encode Hello
+     edit_text --bin encode Hello
+     edit_text --morse encode SOS
+     edit_text --atbash Hello
+     edit_text --xor key Hello
      edit_text --hash md5 哈基米
      edit_text --hash sha256 哈基米
-     edit_text --hash ripemd160 哈基米
+     edit_text --hash crc32 哈基米
+     edit_text --text count "你好 world"
+     edit_text --text sort uniq "b\na\nb"
+     edit_text --text split "," 1 "a,b,c"
      edit_text --tools reverse 123456
      edit_text --tools base10 1A 16
      edit_text --tools randhex 8
      edit_text --tools randpwd
+     edit_text --file read test.txt
+     edit_text --file hash test.txt sha256
+     edit_text --stats "你好 world hello"
 """)
 
         #==版本==
@@ -1160,24 +1418,65 @@ if __name__ == "__main__":
                         print(Hash.RIPEMD160(sys.argv[3]))
                 else:
                     raise UnknownArgs
+            elif sys.argv[2] == "crc32":
+                if sys.argv[3]:
+                    print(CRC32.crc32(sys.argv[3]))
+                else:
+                    raise UnknownArgs
             else:
                 raise UnknownArgs
 
-        #==文本替换==
-        elif sys.argv[1] == "--text" and sys.argv[2] == "replace":
-            if sys.argv[3] == "all":
-                if sys.argv[4] and sys.argv[5] and sys.argv[6]:
-                    print(Text.Replace.string.All_string(sys.argv[4], sys.argv[5], sys.argv[6]))
+        #==文本操作==
+        elif sys.argv[1] == "--text":
+            if sys.argv[2] == "replace":
+                if sys.argv[3] == "all":
+                    if sys.argv[4] and sys.argv[5] and sys.argv[6]:
+                        print(Text.Replace.string.All_string(sys.argv[4], sys.argv[5], sys.argv[6]))
+                    else:
+                        raise UnknownArgs
+                elif sys.argv[3] == "place":
+                    if sys.argv[4] and sys.argv[5] and sys.argv[6] and sys.argv[7]:
+                        print(Text.Replace.string.place_string(sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7]))
+                    else:
+                        raise UnknownArgs
+                elif sys.argv[3] == "precise_place":
+                    if sys.argv[4] and sys.argv[5] and sys.argv[6] and sys.argv[7]:
+                        print(Text.Replace.string.precise_place_string(sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7]))
+                    else:
+                        raise UnknownArgs
                 else:
                     raise UnknownArgs
-            elif sys.argv[3] == "place":
-                if sys.argv[4] and sys.argv[5] and sys.argv[6] and sys.argv[7]:
-                    print(Text.Replace.string.place_string(sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7]))
+            elif sys.argv[2] == "case":
+                if sys.argv[3] and sys.argv[4]:
+                    if sys.argv[3] == "upper":
+                        print(Text.Case.upper(sys.argv[4]))
+                    elif sys.argv[3] == "lower":
+                        print(Text.Case.lower(sys.argv[4]))
+                    elif sys.argv[3] == "title":
+                        print(Text.Case.title(sys.argv[4]))
+                    else:
+                        raise UnknownArgs
                 else:
                     raise UnknownArgs
-            elif sys.argv[3] == "precise_place":
-                if sys.argv[4] and sys.argv[5] and sys.argv[6] and sys.argv[7]:
-                    print(Text.Replace.string.precise_place_string(sys.argv[4], sys.argv[5], sys.argv[6], sys.argv[7]))
+            elif sys.argv[2] == "count":
+                if sys.argv[3]:
+                    print(Text.Count.count(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "sort":
+                if sys.argv[3]:
+                    try:
+                        if sys.argv[3] == "uniq":
+                            print(Text.Sort.sort(sys.argv[4], True))
+                        else:
+                            raise UnknownArgs
+                    except IndexError:
+                        print(Text.Sort.sort(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "split":
+                if sys.argv[3] and sys.argv[4] and sys.argv[5]:
+                    print(Text.Split.split(sys.argv[5], sys.argv[3], sys.argv[4]))
                 else:
                     raise UnknownArgs
             else:
@@ -1208,6 +1507,112 @@ if __name__ == "__main__":
                     raise UnknownArgs
             elif sys.argv[2] == "randpwd":
                 print(Text.MyTools.random_password())
+            else:
+                raise UnknownArgs
+
+        #==URL编解码==
+        elif sys.argv[1] == "--url":
+            if sys.argv[2] == "encode":
+                if sys.argv[3]:
+                    print(URL.encode(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "decode":
+                if sys.argv[3]:
+                    print(URL.decode(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            else:
+                raise UnknownArgs
+
+        #==Hex编解码==
+        elif sys.argv[1] == "--hex":
+            if sys.argv[2] == "encode":
+                if sys.argv[3]:
+                    print(Hex.encode(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "decode":
+                if sys.argv[3]:
+                    print(Hex.decode(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            else:
+                raise UnknownArgs
+
+        #==二进制编解码==
+        elif sys.argv[1] == "--bin":
+            if sys.argv[2] == "encode":
+                if sys.argv[3]:
+                    print(Bin.encode(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "decode":
+                if sys.argv[3]:
+                    print(Bin.decode(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            else:
+                raise UnknownArgs
+
+        #==摩斯电码==
+        elif sys.argv[1] == "--morse":
+            if sys.argv[2] == "encode":
+                if sys.argv[3]:
+                    print(Morse.encode(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "decode":
+                if sys.argv[3]:
+                    print(Morse.decode(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            else:
+                raise UnknownArgs
+
+        #==Atbash==
+        elif sys.argv[1] == "--atbash":
+            if sys.argv[2]:
+                print(Atbash.cipher(sys.argv[2]))
+            else:
+                raise UnknownArgs
+
+        #==XOR==
+        elif sys.argv[1] == "--xor":
+            if sys.argv[2] and sys.argv[3]:
+                print(XOR.cipher(sys.argv[3], sys.argv[2]))
+            else:
+                raise UnknownArgs
+
+        #==文件操作==
+        elif sys.argv[1] == "--file":
+            if sys.argv[2] == "read":
+                if sys.argv[3]:
+                    print(FileTools.read(sys.argv[3]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "write":
+                if sys.argv[3] and sys.argv[4]:
+                    print(FileTools.write(sys.argv[3], sys.argv[4]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "hash":
+                if sys.argv[3] and sys.argv[4]:
+                    print(FileTools.hash(sys.argv[3], sys.argv[4]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "encode":
+                if sys.argv[3] and sys.argv[4]:
+                    print(FileTools.encode(sys.argv[3], sys.argv[4]))
+                else:
+                    raise UnknownArgs
+            else:
+                raise UnknownArgs
+
+        #==Stats==
+        elif sys.argv[1] == "--stats":
+            if sys.argv[2]:
+                print(Stats.stats(sys.argv[2]))
             else:
                 raise UnknownArgs
 
