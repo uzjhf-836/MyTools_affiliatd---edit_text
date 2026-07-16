@@ -1257,13 +1257,17 @@ class Stats():
             read_time_str = f"{read_time:.1f} 分钟"
         return f"字符: {chars}\n单词: {words}\n行数: {lines}\n预估阅读时间: {read_time_str}"
 
+def rainbow():
+    text=list("我是劲爆彩虹"*99)
+    for i in range(256):
+        print(f"\033[38;5;{i}m {text[i]}",end='')
 
 if __name__ == "__main__":
     try:
         #==帮助==
         if sys.argv[1] == "--help":
             print(r"""
- edit_text Beta 877f2e9 — 文本编辑工具
+ edit_text Beta — 文本编辑工具
 
  用法:
      --version                   显示版本号
@@ -1317,6 +1321,7 @@ if __name__ == "__main__":
 
  其他:
      --stats <文本>                        文本统计 & 阅读时间估算
+     --rainbow                             彩虹输出 (～￣▽￣)～
 
  示例:
      edit_text --rot ascii 13 Hello
@@ -1341,6 +1346,7 @@ if __name__ == "__main__":
      edit_text --file read test.txt
      edit_text --file hash test.txt sha256
      edit_text --stats "你好 world hello"
+     edit_text --rainbow
 """)
 
         #==版本==
@@ -1615,6 +1621,10 @@ if __name__ == "__main__":
                 print(Stats.stats(sys.argv[2]))
             else:
                 raise UnknownArgs
+
+        #==Rainbow==
+        elif sys.argv[1] == "--rainbow":
+            rainbow()
 
         else:
             raise UnknownArgs
