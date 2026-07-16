@@ -5,6 +5,9 @@ import random
 import zlib
 import urllib.parse
 
+if sys.version_info.major<3 or (sys.version_info.minor<=5 and sys.version_info.major==3):
+    print('本程序使用格式化字符串(f""),Python3.5及以下不支持此特性,如果出现了这个提示,请尝试更新你的Python版本!')
+    exit()
 class UnknownArgs(Exception):
     """自定义异常：未知的命令行参数。"""
     pass

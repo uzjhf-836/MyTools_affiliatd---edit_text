@@ -1,2 +1,2 @@
 edit_text v0.0.1
-beta 2f5fd32
+beta 02bca98
