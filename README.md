@@ -120,7 +120,7 @@ git clone https://github.com/uzjhf-836/MyTools_affiliatd---edit_text.git
 
 # 直接使用（无需安装）
 cd MyTools_affiliatd---edit_text
-python edit_text_v1_0_1.py --help
+python edit_text_v1_1_0.py --help
 ```
 
 > 要求 Python 3.6+
@@ -134,81 +134,81 @@ python edit_text_v1_0_1.py --help
 
 ```bash
 # 反转字符串
-python edit_text_v1_0_1.py --text reverse "Hello World"
+python edit_text_v1_1_0.py --text reverse "Hello World"
 
 # 替换文本（普通替换）
-python edit_text_v1_0_1.py --text replace "old" "new" "some old text"
+python edit_text_v1_1_0.py --text replace "old" "new" "some old text"
 
 # 大小写转换
-python edit_text_v1_0_1.py --text case upper "hello world"
+python edit_text_v1_1_0.py --text case upper "hello world"
 
 # 重复文本 3 遍
-python edit_text_v1_0_1.py --text repeat 3 "Ha! "
+python edit_text_v1_1_0.py --text repeat 3 "Ha! "
 
 # 取第 0 到 5 位
-python edit_text_v1_0_1.py --text slice 0 5 "Hello World"
+python edit_text_v1_1_0.py --text slice 0 5 "Hello World"
 
 # 以空格分割取第 1 段
-python edit_text_v1_0_1.py --text at " " 1 "Hello World"
+python edit_text_v1_1_0.py --text at " " 1 "Hello World"
 ```
 
 ### 哈希计算
 
 ```bash
-python edit_text_v1_0_1.py --hash md5 "hello"
-python edit_text_v1_0_1.py --hash sha256 "hello"
-python edit_text_v1_0_1.py --hash crc32 "hello"
+python edit_text_v1_1_0.py --hash md5 "hello"
+python edit_text_v1_1_0.py --hash sha256 "hello"
+python edit_text_v1_1_0.py --hash crc32 "hello"
 ```
 
 ### 编解码
 
 ```bash
-python edit_text_v1_0_1.py --base64 encode "Hello World"
-python edit_text_v1_0_1.py --url encode "https://example.com?a=1&b=2"
-python edit_text_v1_0_1.py --morse encode "SOS"
+python edit_text_v1_1_0.py --base64 encode "Hello World"
+python edit_text_v1_1_0.py --url encode "https://example.com?a=1&b=2"
+python edit_text_v1_1_0.py --morse encode "SOS"
 ```
 
 ### RSA 非对称加密
 
 ```bash
 # 生成 2048 位密钥对
-python edit_text_v1_0_1.py --rsa generate 2048
+python edit_text_v1_1_0.py --rsa generate 2048
 
 # 用公钥加密
-python edit_text_v1_0_1.py --rsa encrypt public.pem "秘密消息"
+python edit_text_v1_1_0.py --rsa encrypt public.pem "秘密消息"
 
 # 用私钥解密
-python edit_text_v1_0_1.py --rsa decrypt private.pem "<密文>"
+python edit_text_v1_1_0.py --rsa decrypt private.pem "<密文>"
 
 # 从私钥提取公钥
-python edit_text_v1_0_1.py --rsa pubkey private.pem
+python edit_text_v1_1_0.py --rsa pubkey private.pem
 ```
 
 ### 文件工具
 
 ```bash
-python edit_text_v1_0_1.py --file read input.txt
-python edit_text_v1_0_1.py --file hash sha256 input.txt
+python edit_text_v1_1_0.py --file read input.txt
+python edit_text_v1_1_0.py --file hash sha256 input.txt
 ```
 
 ---
 
 ### 2.导入模块
 ```python
-import edit_text_v1_0_1
+import edit_text_v1_1_0
 使用任何函数！
 ```
 ## 💡 示例
 
 ```bash
 # 摩斯电码 + 反转 + 统计一条龙
-$ python edit_text_v1_0_1.py --morse encode "HELLO"
+$ python edit_text_v1_1_0.py --morse encode "HELLO"
 .... . .-.. .-.. ---
 
-$ python edit_text_v1_0_1.py --text reverse ".... . .-.. .-.. ---"
+$ python edit_text_v1_1_0.py --text reverse ".... . .-.. .-.. ---"
 --- ..-. .-.. .- ....
 
-$ python edit_text_v1_0_1.py --stats "文章内容..."
+$ python edit_text_v1_1_0.py --stats "文章内容..."
 阅读时间: 约 2 分钟 (340 字)
 ```
 
@@ -217,7 +217,7 @@ $ python edit_text_v1_0_1.py --stats "文章内容..."
 ## 📁 项目结构
 
 ```
-edit_text_v1_0_1.py    # 主程序（单文件，全部功能）
+edit_text_v1_1_0.py    # 主程序（单文件，全部功能）
 version.txt            # 版本信息
 .gitignore             # 忽略 __pycache__
 README.md              # 本文件
