@@ -6,6 +6,21 @@ import zlib
 import urllib.parse
 import secrets
 import base64
+import os
+import hashlib
+
+if sys.version_info.major<3 or (sys.version_info.minor<=5 and sys.version_info.major==3):
+    print('本程序使用格式化字符串(f""),Python3.5及以下不支持此特性,如果出现了这个提示,请尝试更新你的Python版本!')
+    exit()
+try:
+    from Crypto.Cipher import AES as _AES
+    from Crypto.Util.Padding import pad as _pad, unpad as _unpad
+    _HAS_CRYPTO = True
+except ImportError:
+    print("please wait......")
+    os.system(f'{sys.executable} -m pip install pycryptodome -i https://pypi.tuna.tsinghua.edu.cn/simple')
+    from Crypto.Cipher import AES as _AES
+    from Crypto.Util.Padding import pad as _pad, unpad as _unpad
 
 #sha512和sha384的K值，为了节省空间，这里使用全局变量
 K = [
@@ -31,9 +46,6 @@ K = [
             0x4CC5D4BECB3E42B6, 0x597F299CFC657E2A, 0x5FCB6FAB3AD6FAEC, 0x6C44198C4A475817
         ]
 
-if sys.version_info.major<3 or (sys.version_info.minor<=5 and sys.version_info.major==3):
-    print('本程序使用格式化字符串(f""),Python3.5及以下不支持此特性,如果出现了这个提示,请尝试更新你的Python版本!')
-    exit()
 class UnknownArgs(Exception):
     """自定义异常：未知的命令行参数。"""
     pass
@@ -1958,6 +1970,108 @@ class RSA():
         RSA.save_public(pub, output_path)
 
 
+class BuddhaTalk():
+    """与佛论禅 —— 将文字加密成佛经样式。
+
+    使用 AES 加密 + 佛经字符映射，生成「佛又曰：…」格式密文。
+    与 JS 版 (https://uzjhf-836.github.io/) 完全兼容。
+    """
+
+    _ENC_MAP = {
+        'e': '啰', 'E': '羯', 't': '婆', 'T': '提', 'a': '摩', 'A': '埵',
+        'o': '诃', 'O': '迦', 'i': '耶', 'I': '吉', 'n': '娑', 'N': '佛',
+        's': '夜', 'S': '驮', 'h': '那', 'H': '谨', 'r': '悉', 'R': '墀',
+        'd': '阿', 'D': '呼', 'l': '萨', 'L': '尼', 'c': '陀', 'C': '唵',
+        'u': '唎', 'U': '伊', 'm': '卢', 'M': '喝', 'w': '帝', 'W': '烁',
+        'f': '醯', 'F': '蒙', 'g': '罚', 'G': '沙', 'y': '嚧', 'Y': '他',
+        'p': '南', 'P': '豆', 'b': '无', 'B': '孕', 'v': '菩', 'V': '伽',
+        'k': '怛', 'K': '俱', 'j': '哆', 'J': '度', 'x': '皤', 'X': '阇',
+        'q': '室', 'Q': '地', 'z': '利', 'Z': '遮',
+        '0': '穆', '1': '参', '2': '舍', '3': '苏', '4': '钵',
+        '5': '曳', '6': '数', '7': '写', '8': '栗', '9': '楞',
+        '+': '咩', '/': '输', '=': '漫',
+    }
+    _DEC_MAP = {v: k for k, v in _ENC_MAP.items()}
+    _DEFAULT_KEY = "takuron.top"
+    _SALTED_PREFIX = b"Salted__"
+    _SALTED_B64_HEAD = "U2FsdGVkX1"
+
+    @staticmethod
+    def _evp_bytes_to_key(password: bytes, salt: bytes, key_len=32, iv_len=16):
+        """OpenSSL EVP_BytesToKey (MD5, count=1)，与 CryptoJS 一致"""
+        digest = hashlib.md5(password + salt).digest()
+        result = digest
+        while len(result) < key_len + iv_len:
+            digest = hashlib.md5(digest + password + salt).digest()
+            result += digest
+        return result[:key_len], result[key_len:key_len + iv_len]
+
+    @staticmethod
+    def encrypt(plaintext: str, key: str = "") -> str:
+        """加密文本 → 佛又曰：啰摩诃萨...
+
+        Args:
+            plaintext (str): 要加密的原文。
+            key (str): 密钥，留空使用默认密钥 "takuron.top"。
+
+        Returns:
+            str: 佛经样式密文，以「佛又曰：」开头。
+
+        Raises:
+            RuntimeError: 缺少 pycryptodome 库。
+        """
+        if not _HAS_CRYPTO:
+            raise RuntimeError("需要 pycryptodome 库：pip install pycryptodome")
+        if not key:
+            key = BuddhaTalk._DEFAULT_KEY
+        salt = os.urandom(8)
+        aes_key, iv = BuddhaTalk._evp_bytes_to_key(key.encode('utf-8'), salt)
+        cipher = _AES.new(aes_key, _AES.MODE_CBC, iv)
+        padded = _pad(plaintext.encode('utf-8'), _AES.block_size)
+        ciphertext = cipher.encrypt(padded)
+
+        raw = BuddhaTalk._SALTED_PREFIX + salt + ciphertext
+        b64 = base64.b64encode(raw).decode('utf-8')
+        b64_body = b64[len(BuddhaTalk._SALTED_B64_HEAD):]
+        buddha = ''.join(BuddhaTalk._ENC_MAP.get(ch, ch) for ch in b64_body)
+        return "佛又曰：" + buddha
+
+    @staticmethod
+    def decrypt(buddha_text: str, key: str = "") -> str:
+        """解密佛经样式密文 → 原文
+
+        Args:
+            buddha_text (str): 以「佛又曰：」开头的密文。
+            key (str): 密钥，留空使用默认密钥 "takuron.top"。
+
+        Returns:
+            str: 解密后的原文。
+
+        Raises:
+            ValueError: 密文格式有误或密钥错误。
+            RuntimeError: 缺少 pycryptodome 库。
+        """
+        if not _HAS_CRYPTO:
+            raise RuntimeError("需要 pycryptodome 库：pip install pycryptodome")
+        if not key:
+            key = BuddhaTalk._DEFAULT_KEY
+        if not buddha_text.startswith("佛又曰："):
+            raise ValueError("施主可曾记得此为何高僧所言？（密文应以「佛又曰：」开头）")
+        body = buddha_text[4:]
+        b64_body = ''.join(BuddhaTalk._DEC_MAP.get(ch, ch) for ch in body)
+
+        raw = base64.b64decode(BuddhaTalk._SALTED_B64_HEAD + b64_body)
+        if raw[:8] != BuddhaTalk._SALTED_PREFIX:
+            raise ValueError("施主可曾记得此为何高僧所言？")
+        salt = raw[8:16]
+        ciphertext = raw[16:]
+
+        aes_key, iv = BuddhaTalk._evp_bytes_to_key(key.encode('utf-8'), salt)
+        cipher = _AES.new(aes_key, _AES.MODE_CBC, iv)
+        padded = cipher.decrypt(ciphertext)
+        return _unpad(padded, _AES.block_size).decode('utf-8')
+
+
 def rainbow():
     """输出 256 色彩虹文字。
 
@@ -1983,7 +2097,7 @@ if __name__ == "__main__":
         #==帮助==
         if sys.argv[1] == "--help":
             print(r"""
- edit_text v1.0.0 — 文本编辑工具
+ edit_text v1.0.1 — 文本编辑工具
 
  用法:
      --version                   显示版本号
@@ -2038,6 +2152,8 @@ if __name__ == "__main__":
  其他:
      --stats <文本>                        文本统计 & 阅读时间估算
      --rainbow                             彩虹输出 (～￣▽￣)～
+     --buddha encrypt <文本> [密钥]           与佛论禅加密 → 佛又曰：...
+     --buddha decrypt <密文> [密钥]           与佛论禅解密 → 原文
 	 RSA 非对称加密:
 	     --rsa generate [位数]                        生成 RSA 密钥对 (默认 2048 位)
 	     --rsa encrypt <公钥文件> <文本>               使用公钥加密
@@ -2078,7 +2194,7 @@ if __name__ == "__main__":
                     ver = f.read().strip()
                 print(ver)
             except:
-                print("edit_text v0.0.1")
+                print("edit_text v1.0.1")
 
         #==ROT旋转加密==
         elif sys.argv[1] == "--rot":
@@ -2362,6 +2478,33 @@ if __name__ == "__main__":
         #==Rainbow==
         elif sys.argv[1] == "--rainbow":
             rainbow()
+
+        #==与佛论禅==
+        elif sys.argv[1] == "--buddha":
+            if len(sys.argv) < 4:
+                raise UnknownArgs
+            key = ''
+            if len(sys.argv) >= 5:
+                key = sys.argv[4]
+            if sys.argv[2] == "encrypt":
+                try:
+                    result = BuddhaTalk.encrypt(sys.argv[3], key)
+                except RuntimeError as e:
+                    print(f'❌ {e}')
+                    exit()
+                print(result)
+            elif sys.argv[2] == "decrypt":
+                try:
+                    result = BuddhaTalk.decrypt(sys.argv[3], key)
+                except ValueError as e:
+                    print(e)
+                    exit()
+                except RuntimeError as e:
+                    print(e)
+                    exit()
+                print(result)
+            else:
+                raise UnknownArgs
 
         #==RSA加密==
         elif sys.argv[1] == "--rsa":

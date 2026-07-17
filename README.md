@@ -1,7 +1,7 @@
-# edit_text
+# edit_text version 1.0.1
 
 [![Python](https://img.shields.io/badge/Python-3.6+-yellow?logo=python)](https://python.org)
-[![Version](https://img.shields.io/badge/Version-v1.0.0-blue)](https://github.com/uzjhf-836/MyTools_affiliatd---edit_text)
+[![Version](https://img.shields.io/badge/Version-v1.0.1-blue)](https://github.com/uzjhf-836/MyTools_affiliatd---edit_text)
 [![License](https://img.shields.io/badge/License-Apache_2.0-green)](https://apache.org/licenses/LICENSE-2.0)
 [![Platform](https://img.shields.io/badge/Platform-Windows/macOS/Linux-white)](https://www.bing.com/search?q=all+platforms)
 [![Commit](https://img.shields.io/github/last-commit/uzjhf-836/MyTools_affiliatd---edit_text?logo=github)](https://github.com/uzjhf-836/MyTools_affiliatd---edit_text/commits/main)

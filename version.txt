@@ -1,1 +1,1 @@
-edit_text v1.0.0 30604c9
+edit_text v1.0.1 520bbfb
