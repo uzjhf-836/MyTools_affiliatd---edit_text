@@ -1,1 +1,1 @@
-edit_text v1.0.1 520bbfb
+edit_text v1.1.0

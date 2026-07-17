@@ -2,7 +2,6 @@ import sys
 import math
 import struct
 import random
-import zlib
 import urllib.parse
 import secrets
 import base64
@@ -346,7 +345,7 @@ class Text():
             chars = len(text)
             words = len(text.split())
             lines = text.count('\n') + 1
-            return f"字符: {chars}\n单词: {words}\n行数: {lines}"
+            return f"字符: {chars}\n阅读速度: 400 字/分钟\n行数: {lines}"
 
     class Sort():
         """文本行排序工具。
@@ -1110,7 +1109,6 @@ class Hash():
         return struct.pack('>8I', h0, h1, h2, h3, h4, h5, h6, h7).hex()
 
     @staticmethod
-    @staticmethod
     def sha512(message):
         """计算指定消息的 SHA-512 哈希值。
 
@@ -1492,10 +1490,27 @@ class XOR():
 class CRC32():
     """CRC32 校验工具类。
 
-    提供 32 位循环冗余校验值计算。
+    查表法实现，无需 zlib 库。
     """
-    @staticmethod
-    def crc32(text):
+    _TABLE = None
+
+    @classmethod
+    def _init_table(cls):
+        if cls._TABLE is not None:
+            return
+        table = []
+        for i in range(256):
+            crc = i
+            for _ in range(8):
+                if crc & 1:
+                    crc = (crc >> 1) ^ 0xEDB88320
+                else:
+                    crc >>= 1
+            table.append(crc)
+        cls._TABLE = table
+
+    @classmethod
+    def crc32(cls, text,warning=True):
         """计算文本的 CRC32 校验值。
 
         Args:
@@ -1508,7 +1523,27 @@ class CRC32():
             >>> CRC32.crc32('Hello')
             'f7d18982'
         """
-        return format(zlib.crc32(str(text).encode('utf-8')) & 0xFFFFFFFF, '08x')
+        if warning:
+            print('\033[91m')
+            print(r"""
+ __          __              _
+ \ \        / /             (_)
+  \ \  /\  / /_ _ _ __ _ __  _ _ __   __ _
+   \ \/  \/ / _` | '__| '_ \| | '_ \ / _` |
+    \  /\  / (_| | |  | | | | | | | | (_| |
+     \/  \/ \__,_|_|  |_| |_|_|_| |_|\__, |
+                                      __/ |
+                                     |___/ """)
+            print("""警告!CRC32 是循环冗余校验（校验和）算法，并非加密哈希函数！
+设计目的是检测数据传输中的意外错误，极易被蓄意篡改或制造碰撞。
+绝不能用于任何安全相关场景（如密码存储、数字签名、文件完整性验证等）！
+仅供于实验参考/数据校验用途!!!
+\033[0m""")
+        cls._init_table()
+        crc = 0xFFFFFFFF
+        for byte in str(text).encode('utf-8'):
+            crc = cls._TABLE[(crc ^ byte) & 0xFF] ^ (crc >> 8)
+        return format(crc ^ 0xFFFFFFFF, '08x')
 
 class FileTools():
     """文件操作工具类。
@@ -1638,12 +1673,13 @@ class Stats():
         chars = len(text)
         words = len(text.split())
         lines = text.count('\n') + 1
-        read_time = words / 300
+        # 中文阅读速度约 400 字/分钟
+        read_time = chars / 400
         if read_time < 1:
-            read_time_str = f"{read_time * 60:.0f} 秒"
+            read_time_str = f"1 秒" if read_time * 60 < 1 else f"{read_time * 60:.0f} 秒"
         else:
             read_time_str = f"{read_time:.1f} 分钟"
-        return f"字符: {chars}\n单词: {words}\n行数: {lines}\n预估阅读时间: {read_time_str}"
+        return f"字符: {chars}\n阅读速度: 400 字/分钟\n行数: {lines}\n预估阅读时间: {read_time_str}"
 
 class RSA():
     """RSA 非对称加密/解密。
@@ -2097,7 +2133,7 @@ if __name__ == "__main__":
         #==帮助==
         if sys.argv[1] == "--help":
             print(r"""
- edit_text v1.0.1 — 文本编辑工具
+ edit_text v1.1.0 — 文本编辑工具
 
  用法:
      --version                   显示版本号
@@ -2126,7 +2162,7 @@ if __name__ == "__main__":
      --hash sha384 <文本>                SHA-384
      --hash sha512 <文本>                SHA-512
      --hash ripemd160 <文本> [warning]   RIPEMD-160
-     --hash crc32 <文本>                 CRC32
+     --hash crc32 <文本> [warning]        CRC32
 
  文本操作:
      --text replace all <文本> <旧> <新>               全部替换
@@ -2173,7 +2209,7 @@ if __name__ == "__main__":
      edit_text --xor key Hello
      edit_text --hash md5 哈基米
      edit_text --hash sha256 哈基米
-     edit_text --hash crc32 哈基米
+     edit_text --hash crc32 <文本> False
      edit_text --text count "你好 world"
      edit_text --text sort uniq "b\na\nb"
      edit_text --text split "," 1 "a,b,c"
@@ -2194,7 +2230,7 @@ if __name__ == "__main__":
                     ver = f.read().strip()
                 print(ver)
             except:
-                print("edit_text v1.0.1")
+                print("edit_text v1.1.0")
 
         #==ROT旋转加密==
         elif sys.argv[1] == "--rot":
@@ -2264,7 +2300,11 @@ if __name__ == "__main__":
                     raise UnknownArgs
             elif sys.argv[2] == "crc32":
                 if sys.argv[3]:
-                    print(CRC32.crc32(sys.argv[3]))
+                    try:
+                        if str(sys.argv[4]):
+                            print(CRC32.crc32(sys.argv[3],sys.argv[4]))
+                    except IndexError:
+                        print(CRC32.crc32(sys.argv[3]))
                 else:
                     raise UnknownArgs
             else:
