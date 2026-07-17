@@ -5,9 +5,9 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-green)](https://apache.org/licenses/LICENSE-2.0)
 [![Platform](https://img.shields.io/badge/Platform-Windows/macOS/Linux-white)](https://www.bing.com/search?q=all+platforms)
 [![Commit](https://img.shields.io/github/last-commit/uzjhf-836/MyTools_affiliatd---edit_text?logo=github)](https://github.com/uzjhf-836/MyTools_affiliatd---edit_text/commits/main)
-[![Co-Author](https://img.shields.io/badge/Co--Author-Claude-8A2BE2?logo=claude)](https://claude.ai)
+[![AI-Assisted](https://img.shields.io/badge/AI--Assisted-Claude-8A2BE2?logo=claude)](https://claude.ai)
 
-> MyTools「Text」类的加强版 —— 纯 Python 命令行文本工具集，~~零依赖~~<Python是个依赖qwq！
+> MyTools「Text」类的加强版 —— 纯 Python 命令行文本工具集！
 
 ---
 
@@ -38,10 +38,9 @@
 
 ### 特点
 
-~~零依赖~~ —— 纯 Python 标准~~库~~实现，**无需 pip install**
 - **覆盖全面** —— 文本、哈希、编解码、密码学、文件处理
 - **简单易用** —— 命令行参数直截了当，--help 即学即用
-- **纯 Python 实现** —— RSA、SHA 系列哈希等算法均从零手写
+- **纯 Python 实现** —— RSA、SHA 系列哈希等算法均从零手写;部分算法（如 CRC32）使用标准库
 
 ---
 
@@ -107,7 +106,7 @@
 |------|------|------|
 | 阅读时间统计 | `--stats` | 估算文本阅读时间 |
 | 随机十六进制 | `--tools randhex` | 生成随机十六进制数 |
-| 随机密码 | `--tools randpass` | 生成随机密码 |
+| 随机密码 | `--tools randpwd` | 生成随机密码 |
 | 进制转换 | `--tools base` | 任意进制互转 |
 | 彩红字 | `--rainbow` | 彩色渐变输出 |
 
@@ -121,7 +120,7 @@ git clone https://github.com/uzjhf-836/MyTools_affiliatd---edit_text.git
 
 # 直接使用（无需安装）
 cd MyTools_affiliatd---edit_text
-python edit_text_v1_0_0.py --help
+python edit_text_v1_0_1.py --help
 ```
 
 > 要求 Python 3.6+
@@ -135,81 +134,81 @@ python edit_text_v1_0_0.py --help
 
 ```bash
 # 反转字符串
-python edit_text_v1_0_0.py --text reverse "Hello World"
+python edit_text_v1_0_1.py --text reverse "Hello World"
 
 # 替换文本（普通替换）
-python edit_text_v1_0_0.py --text replace "old" "new" "some old text"
+python edit_text_v1_0_1.py --text replace "old" "new" "some old text"
 
 # 大小写转换
-python edit_text_v1_0_0.py --text case upper "hello world"
+python edit_text_v1_0_1.py --text case upper "hello world"
 
 # 重复文本 3 遍
-python edit_text_v1_0_0.py --text repeat 3 "Ha! "
+python edit_text_v1_0_1.py --text repeat 3 "Ha! "
 
 # 取第 0 到 5 位
-python edit_text_v1_0_0.py --text slice 0 5 "Hello World"
+python edit_text_v1_0_1.py --text slice 0 5 "Hello World"
 
 # 以空格分割取第 1 段
-python edit_text_v1_0_0.py --text at " " 1 "Hello World"
+python edit_text_v1_0_1.py --text at " " 1 "Hello World"
 ```
 
 ### 哈希计算
 
 ```bash
-python edit_text_v1_0_0.py --hash md5 "hello"
-python edit_text_v1_0_0.py --hash sha256 "hello"
-python edit_text_v1_0_0.py --hash crc32 "hello"
+python edit_text_v1_0_1.py --hash md5 "hello"
+python edit_text_v1_0_1.py --hash sha256 "hello"
+python edit_text_v1_0_1.py --hash crc32 "hello"
 ```
 
 ### 编解码
 
 ```bash
-python edit_text_v1_0_0.py --base64 encode "Hello World"
-python edit_text_v1_0_0.py --url encode "https://example.com?a=1&b=2"
-python edit_text_v1_0_0.py --morse encode "SOS"
+python edit_text_v1_0_1.py --base64 encode "Hello World"
+python edit_text_v1_0_1.py --url encode "https://example.com?a=1&b=2"
+python edit_text_v1_0_1.py --morse encode "SOS"
 ```
 
 ### RSA 非对称加密
 
 ```bash
 # 生成 2048 位密钥对
-python edit_text_v1_0_0.py --rsa generate 2048
+python edit_text_v1_0_1.py --rsa generate 2048
 
 # 用公钥加密
-python edit_text_v1_0_0.py --rsa encrypt public.pem "秘密消息"
+python edit_text_v1_0_1.py --rsa encrypt public.pem "秘密消息"
 
 # 用私钥解密
-python edit_text_v1_0_0.py --rsa decrypt private.pem "<密文>"
+python edit_text_v1_0_1.py --rsa decrypt private.pem "<密文>"
 
 # 从私钥提取公钥
-python edit_text_v1_0_0.py --rsa pubkey private.pem
+python edit_text_v1_0_1.py --rsa pubkey private.pem
 ```
 
 ### 文件工具
 
 ```bash
-python edit_text_v1_0_0.py --file read input.txt
-python edit_text_v1_0_0.py --file hash sha256 input.txt
+python edit_text_v1_0_1.py --file read input.txt
+python edit_text_v1_0_1.py --file hash sha256 input.txt
 ```
 
 ---
 
 ### 2.导入模块
 ```python
-import edit_text_v1_0_0
+import edit_text_v1_0_1
 使用任何函数！
 ```
 ## 💡 示例
 
 ```bash
 # 摩斯电码 + 反转 + 统计一条龙
-$ python edit_text_v1_0_0.py --morse encode "HELLO"
+$ python edit_text_v1_0_1.py --morse encode "HELLO"
 .... . .-.. .-.. ---
 
-$ python edit_text_v1_0_0.py --text reverse ".... . .-.. .-.. ---"
+$ python edit_text_v1_0_1.py --text reverse ".... . .-.. .-.. ---"
 --- ..-. .-.. .- ....
 
-$ python edit_text_v1_0_0.py --stats "文章内容..."
+$ python edit_text_v1_0_1.py --stats "文章内容..."
 阅读时间: 约 2 分钟 (340 字)
 ```
 
@@ -218,10 +217,11 @@ $ python edit_text_v1_0_0.py --stats "文章内容..."
 ## 📁 项目结构
 
 ```
-edit_text_v1_0_0.py    # 主程序（单文件，全部功能）
+edit_text_v1_0_1.py    # 主程序（单文件，全部功能）
 version.txt            # 版本信息
 .gitignore             # 忽略 __pycache__
 README.md              # 本文件
+LICENSE                # Apache 2.0许可证
 ```
 
 ---
@@ -232,4 +232,8 @@ README.md              # 本文件
 
 ---
 
-*由 uzjhf-836 和 Claude 共同开发*
+## 致谢
+- 本工具的核心加密逻辑受“与佛论禅”项目 https://github.com/takuron/talk-with-buddha/blob/master/index.html 启发
+- 部分代码由 AI 辅助生成，所有最终决策和设计均由作者完成
+- 
+*—— uzjhf-836*
