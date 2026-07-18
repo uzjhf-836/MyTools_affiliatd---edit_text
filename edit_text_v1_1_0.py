@@ -2301,8 +2301,9 @@ if __name__ == "__main__":
             elif sys.argv[2] == "crc32":
                 if sys.argv[3]:
                     try:
-                        if str(sys.argv[4]):
-                            print(CRC32.crc32(sys.argv[3],sys.argv[4]))
+                        _warn = sys.argv[4]
+                        _show = _warn.lower() not in ("false","0","no","quiet")
+                        print(CRC32.crc32(sys.argv[3], _show))
                     except IndexError:
                         print(CRC32.crc32(sys.argv[3]))
                 else:
