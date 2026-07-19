@@ -489,6 +489,42 @@ class Text():
             except (IndexError, ValueError, TypeError):
                 return text
 
+    @staticmethod
+    def Base(num:str, from_base:int, to_base:int):
+        """任意进制转任意进制（支持 2~62 进制，含 0-9 A-Z a-z）。
+
+        Args:
+            num (str): 要转换的数字字符串。
+            from_base (int): 源进制。
+            to_base (int): 目标进制。
+
+        Returns:
+            str: 转换后的数字字符串。
+
+        Example:
+            >>> Text.Base("FF", 16, 10)
+            '255'
+            >>> Text.Base("255", 10, 16)
+            'FF'
+        """
+        try:
+            digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+            fb = int(from_base)
+            tb = int(to_base)
+            dec = 0
+            num = str(num)
+            for ch in num:
+                dec = dec * fb + digits.index(ch)
+            if dec == 0:
+                return "0"
+            result = []
+            while dec > 0:
+                result.append(digits[dec % tb])
+                dec //= tb
+            return ''.join(reversed(result))
+        except Exception as e:
+            return f"[错误] {e}"
+
 class ROT():
     """ROT 旋转加密工具类。
 
@@ -2133,7 +2169,7 @@ if __name__ == "__main__":
         #==帮助==
         if sys.argv[1] == "--help":
             print(r"""
- edit_text v1.1.0 — 文本编辑工具
+ edit_text v1.2.0 — 文本编辑工具
 
  用法:
      --version                   显示版本号
@@ -2176,6 +2212,7 @@ if __name__ == "__main__":
  工具:
      --tools reverse <文本>                    反转字符串
      --tools base10 <数字> <进制>              任意进制转十进制
+     --tools base <数字> <源进制> <目标进制>        任意进制转任意进制
      --tools randhex <长度> [nozero]           随机十六进制数
      --tools randpwd                           生成随机密码
 
@@ -2215,6 +2252,7 @@ if __name__ == "__main__":
      edit_text --text split "," 1 "a,b,c"
      edit_text --tools reverse 123456
      edit_text --tools base10 1A 16
+     edit_text --tools base FF 16 10
      edit_text --tools randhex 8
      edit_text --tools randpwd
      edit_text --file read test.txt
@@ -2230,7 +2268,7 @@ if __name__ == "__main__":
                     ver = f.read().strip()
                 print(ver)
             except:
-                print("edit_text v1.1.0")
+                print("edit_text v1.2.0")
 
         #==ROT旋转加密==
         elif sys.argv[1] == "--rot":
@@ -2392,6 +2430,11 @@ if __name__ == "__main__":
             elif sys.argv[2] == "base10":
                 if sys.argv[3] and sys.argv[4]:
                     print(Text.MyTools.Base10(sys.argv[3], sys.argv[4]))
+                else:
+                    raise UnknownArgs
+            elif sys.argv[2] == "base":
+                if sys.argv[3] and sys.argv[4] and sys.argv[5]:
+                    print(Text.Base(sys.argv[3], sys.argv[4], sys.argv[5]))
                 else:
                     raise UnknownArgs
             elif sys.argv[2] == "randhex":
